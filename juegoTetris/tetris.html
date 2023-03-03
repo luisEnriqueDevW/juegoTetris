@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* #canvas {
+            border: 2px solid black;
+        } */
+        .Puntajes {
+            font-size: 50px;
+            margin-top: 20%;
+
+        }
+
+        .table-hijo {
+            border: 2px solid black;
+            margin-top: 20%;
+        }
+        .table-hijo-tr td {
+            border: 4px solid black;
+            background-color: rgba(155, 39, 39, 0.507);
+        }
+
+        .table-hijo td {
+            /* border: 2px solid black; */
+            font-size: 50px;
+            margin-top: 20%;
+        }
+
+        .input-overShow {
+            position: absolute;
+            width: 100%;
+            height: 100vw;
+            background-color: rgb(231, 167, 167);
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+        }
+        #InputSec2{
+            display: flex;
+            flex-direction: column;
+        }
+        #inp1{
+            font-size: 40px;
+            text-align: center;
+        }
+        #inp2{
+            font-size: 40px;
+        }
+
+
+
+        .input-overHidden {
+            display: none;
+        }
+
+        .contenedor {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: relative;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: center;
+            align-items: center;
+
+        }
+
+       
+
+    </style>
+</head>
+
+<body onload="inicializa()">
+
+
+    <section class="contenedor">
+
+        <canvas id="canvas" style="border: 2px solid black;"></canvas>
+
+
+        <p class="Puntajes">0</p>
+        <table class="table">
+            <div class="table-cont">
+                <!-- <tr class="table-hijo">
+            <td>ssddssdsddsdssds</td>
+        </tr> -->
+            </div>
+        </table>
+
+
+
+        <div id="sectionOfInput" class="input-overHidden">
+            <section class="img-over">
+                <p>GAME OVER </p>
+            </section>
+            <section id="InputSec2">
+                <input id="inp1" type="text" placeholder="Inserta Nombre" maxlength="4">
+                <!-- <input id="#inp2" type="submit" value="OK" /> -->
+                <button id="inp2" onclick="pieza.TablaPuntaje()">OK</button>
+                <!-- onclick="pieza.TablaPuntaje()" -->
+            </section>
+
+        </div>
+
+    </section>
+
+
+
+
+
+    <script>
+        var canvas;
+        var ctx;
+        var fps = 50;
+
+        var anchoTablero = 10;
+        var altoTablero = 16;
+        var anchoCanvas = 400;
+        var altoCanvas = 640;
+        var anchoF = 40;
+        var altoF = 40;
+        var puntajeIT = 0;
+
+        var sectionInput = document.getElementById("sectionOfInput")
+        var Pntj = document.querySelectorAll('.Puntajes');
+        var tbl = document.querySelector(".table");
+        var tblContent = document.querySelector(".table-cont");
+        var nickname = document.getElementById("inp1");
+        var inputSalida = document.getElementById("inp2");
+
+
+
+        var tablero = [
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ];
+
+        //DIBUJO DE LAS PIEZAS (Matriz de 4 dimensiones)
+        // fichaGrafico [Pieza] [Posición/rotación] [y] [x]
+
+        var fichaGrafico = [
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 1, 1, 0],
+                    [0, 1, 1, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 0],
+                    [0, 1, 1, 0],
+                    [0, 1, 1, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 0],
+                    [0, 1, 1, 0],
+                    [0, 1, 1, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 0],
+                    [0, 1, 1, 0],
+                    [0, 1, 1, 0],
+                    [0, 0, 0, 0]
+                ]
+            ],
+
+            [
+                [
+                    [0, 0, 0, 0],
+                    [2, 2, 2, 2],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0]
+                ],
+
+                [
+                    [0, 0, 0, 0],
+                    [2, 2, 2, 2],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0]
+                ]
+
+            ],
+
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 3, 3],
+                    [0, 3, 3, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 3, 0],
+                    [0, 0, 3, 3],
+                    [0, 0, 0, 3],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 3, 3],
+                    [0, 3, 3, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 3, 0],
+                    [0, 0, 3, 3],
+                    [0, 0, 0, 3],
+                    [0, 0, 0, 0]
+                ]
+
+            ],
+
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 4, 4, 0],
+                    [0, 0, 4, 4],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 4],
+                    [0, 0, 4, 4],
+                    [0, 0, 4, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 0],
+                    [0, 4, 4, 0],
+                    [0, 0, 4, 4],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 4],
+                    [0, 0, 4, 4],
+                    [0, 0, 4, 0],
+                    [0, 0, 0, 0]
+                ]
+
+            ],
+
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 5, 5, 5],
+                    [0, 5, 0, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 5, 0],
+                    [0, 0, 5, 0],
+                    [0, 0, 5, 5],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 0, 5],
+                    [0, 5, 5, 5],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 5, 5, 0],
+                    [0, 0, 5, 0],
+                    [0, 0, 5, 0],
+                    [0, 0, 0, 0]
+                ]
+
+            ],
+
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 6, 6, 6],
+                    [0, 0, 0, 6],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 6, 6],
+                    [0, 0, 6, 0],
+                    [0, 0, 6, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 6, 0, 0],
+                    [0, 6, 6, 6],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 6, 0],
+                    [0, 0, 6, 0],
+                    [0, 6, 6, 0],
+                    [0, 0, 0, 0]
+                ]
+            ],
+
+
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 7, 7, 7],
+                    [0, 0, 7, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 7, 0],
+                    [0, 0, 7, 7],
+                    [0, 0, 7, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 7, 0],
+                    [0, 7, 7, 7],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ],
+
+                [
+                    [0, 0, 7, 0],
+                    [0, 7, 7, 0],
+                    [0, 0, 7, 0],
+                    [0, 0, 0, 0]
+                ]
+            ]
+        ];
+
+
+        var pieza;
+
+        var objPieza = function () {
+            this.x = 1;
+            this.y = -2;
+            this.angulo = 0;
+            this.tipo = 1;
+            var banderon = false;
+
+
+            this.dibuja = function () {
+
+                for (py = 0; py < 4; py++) {
+                    for (px = 0; px < 4; px++) {
+
+                        if (fichaGrafico[this.tipo][this.angulo][py][px] !== 0) {
+
+                            if (this.tipo === 0) {
+                                ctx.fillStyle = "#f0b113";
+                            }
+                            if (this.tipo === 1) {
+                                ctx.fillStyle = "#f01313";
+                            }
+                            if (this.tipo === 2) {
+                                ctx.fillStyle = "#f0ec13";
+                            }
+                            if (this.tipo === 3) {
+                                ctx.fillStyle = "#9ff013";
+                            }
+                            if (this.tipo === 4) {
+                                ctx.fillStyle = "#2913f0";
+                            }
+                            if (this.tipo === 5) {
+                                ctx.fillStyle = "#13bcf0";
+                            }
+                            if (this.tipo === 6) {
+                                ctx.fillStyle = "#e113f0";
+                            }
+
+
+
+                            ctx.fillRect((this.x + px - 1) * anchoF, (this.y + py) * altoF, anchoF, altoF);
+                            //    tablero[py + this.y][px + this.x] = -2;
+
+
+                        }
+
+                    }
+
+                }
+
+
+
+
+            }
+
+
+
+
+
+            this.puntajeITT = puntajeIT;
+
+
+            this.puntaje = function (indicador) {
+                if (indicador === true) {
+                    this.puntajeITT += 10;
+                }
+                Pntj[0].innerHTML = this.puntajeITT;
+
+
+            }
+
+            this.ButtonFunctions = function () {
+
+            }
+
+
+            this.ArrayTablas = [];
+
+            this.TablaPuntaje = function () {
+      
+
+                var puntajeITT_ = this.puntajeITT
+          
+                let nicknameSearch1_ = nickname.value.trim();
+                let nicknameSearch2 = nickname.value.length;
+                if (nicknameSearch1_ !== "" && nicknameSearch2 >= 1) {
+
+
+                    tbl.previousElementSibling.innerHTML = "";
+
+
+                    var fila1 = document.createElement("table")
+                    fila1.setAttribute("class", "table-hijo")
+
+                    var objTabla = {
+                        usuario: `<td> ${nicknameSearch1_} </td>` + ` <td> ${this.puntajeITT} </td>`,
+                    }
+
+
+                    this.ArrayTablas.push({
+                        usuario: `<tr class="table-hijo-tr"> <td> ${nicknameSearch1_} </td> <td> ${this.puntajeITT} </td> </tr>`,
+                        puntaje: this.puntajeITT
+                    })
+
+                    this.ArrayTablas.sort(function (a, b) {
+                        return b.puntaje - a.puntaje
+                    })
+
+
+                    this.ArrayTablas.forEach(function (e) {
+                        fila1.innerHTML += e.usuario
+                        tblContent.appendChild(fila1);
+                    })
+           
+                    this.puntajeITT = 0;
+                    puntajeIT = 0;
+                    Pntj[0].innerHTML = 0;
+
+                    this.AparecerGameOver("addOFF", "offON");
+                }
+            }
+
+
+            this.AparecerGameOver = function (add, remove) {
+         
+
+                if (remove === "offON") {
+                    sectionInput.classList.remove("input-overShow")
+                    sectionInput.classList.add("input-overHidden")
+
+                }
+
+                if (add === "addON") {
+                    sectionInput.classList.add("input-overShow")
+                    sectionInput.classList.remove("input-overHidden")
+
+                }
+
+
+            }
+
+
+
+
+
+            this.contador = 0;
+            this.meta = 40;
+
+            this.bajar = function () {
+
+
+                if (this.colision(this.angulo, this.y + 1, this.x) === false) {
+
+                    if (this.contador < this.meta) {
+                        this.contador++;
+                    } else {
+                        this.y += 1;
+                        this.contador = 0;
+                    }
+
+                } else {
+                    if (this.y !== -2) {
+
+                        for (py = 0; py < 4; py++) {
+                            for (px = 0; px < 4; px++) {
+
+                                if (fichaGrafico[this.tipo][this.angulo][py][px] !== 0) {
+                                    NuevoTipoBajar = (this.tipo + 1);
+
+                                    tablero[py + this.y][px + this.x] = NuevoTipoBajar;
+
+                                }
+
+                            }
+
+                        }
+
+
+                    } else {
+                        this.AparecerGameOver("addON", "offOFF");
+
+
+                        inputSalida.addEventListener("click", function () {
+                            var nicknameSearch1_ = nickname.value.trim();
+                            var nicknameSearch2 = nickname.value.length;
+                            if (nicknameSearch1_ !== "" && nicknameSearch2 >= 1) {
+                               
+                                if (this.contador < (this.meta + 140)) {
+                                    this.contador++;
+                                    return false;
+                                } else {
+
+                                    for (py = 0; py < 16; py++) {
+                                        for (px = 1; px < 11; px++) {
+                                            tablero[py][px] = 0;
+                                        }
+                                    }
+                                    this.contador = 0;
+
+
+                                }
+                         
+
+                            }
+                      
+                        })
+                    }
+
+
+                    this.x = 3;
+                    this.y = -2;
+
+                    nuevoTipo = Math.floor(Math.random() * 7);
+                    this.tipo = nuevoTipo;
+                    this.angulo = 0;
+                    this.borrarLineas()
+
+
+
+                }
+
+
+
+            }
+
+
+            this.borrarLineas = function () {
+                var compr;
+                var indexTablero
+                for (var i = 1; i < 16; i++) {
+                    compr = tablero[i].every(function (e) {
+                        return e >= 1;
+                    })
+
+                    if (compr === true) {
+                        console.log(tablero[i], "tu peirdkdkdkdk", i)
+                        tablero.splice(i, 1);
+                        tablero.unshift([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
+                        console.table(tablero)
+                        this.puntaje(compr);
+
+                    }
+
+                }
+
+            }
+
+
+
+
+
+            this.rotar = function () {
+           
+                var nuevoAngulos = (this.angulo + 1);
+
+                if (nuevoAngulos === 4) {
+                    nuevoAngulos = 0
+                }
+
+                if (this.colision(nuevoAngulos, this.y, this.x) === false) {
+
+
+
+                    console.log(this.angulo)
+                    if (this.angulo < 3) {
+                        this.angulo++;
+                        console.log(this.angulo)
+                    } else {
+                        nuevoAngulos = 0;
+                        this.angulo = 0;
+                        console.log("mames lata")
+                    }
+                }
+                else {
+                    console.log("no puedes rotar")
+                }
+
+
+            }
+
+            this.izquierda = function () {
+
+                if (this.colision(this.angulo, this.y, this.x - 1) === false) {
+                    this.x--;
+
+                }
+                console.table(tablero)
+
+
+            }
+            this.derecha = function () {
+                if (this.colision(this.angulo, this.y, this.x + 1) === false) {
+                    this.x++;
+
+                }
+                console.table(tablero)
+
+
+            }
+            this.abajo = function () {
+                if (this.colision(this.angulo, this.y + 1, this.x) === false) {
+                    this.y++;
+
+                }
+
+            }
+            console.table(tablero)
+
+
+
+
+            this.colision = function (anguloNuevo, yNueva, xNueva) {
+                var resultado = false;
+
+                for (py = 0; py < 4; py++) {
+
+                    for (px = 0; px < 4; px++) {
+                        if (fichaGrafico[this.tipo][anguloNuevo][py][px] > 0) {
+                            if (tablero[yNueva + py][xNueva + px] > 0) {
+                                resultado = true;
+
+                            }
+
+                        }
+
+                    }
+                }
+                return resultado;
+            }
+
+
+
+
+
+        }
+
+
+
+        function dibujarTablero() {
+            for (py = 0; py < 16; py++) {
+                for (px = 0; px < 11; px++) {
+
+                    if (tablero[py][px] !== 0) {
+
+
+                        if (tablero[py][px] === 1) {
+                            ctx.fillStyle = "#f0b113";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+                        if (tablero[py][px] === 2) {
+                            ctx.fillStyle = "#f01313";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+                        if (tablero[py][px] === 3) {
+                            ctx.fillStyle = "#f0ec13";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+                        if (tablero[py][px] === 4) {
+                            ctx.fillStyle = "#9ff013";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+                        if (tablero[py][px] === 5) {
+                            ctx.fillStyle = "#2913f0";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+                        if (tablero[py][px] === 6) {
+                            ctx.fillStyle = "#13bcf0";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+                        if (tablero[py][px] === 7) {
+                            ctx.fillStyle = "#e113f0";
+                            ctx.fillRect((px - 1) * anchoF, py * altoF, anchoF, altoF)
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+
+
+        function inicializa() {
+            canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d");
+            canvas.width = anchoCanvas;
+            canvas.height = altoCanvas;
+            setInterval(function () {
+                principal();
+            }, 1000 / fps)
+            inicializaTeclado();
+            pieza = new objPieza()
+      
+        }
+
+        function borraCanvas() {
+         
+            ctx.clearRect(0, 0, canvas.width = anchoCanvas, canvas.height = altoCanvas);
+        }
+
+        function principal() {
+            borraCanvas();
+            pieza.dibuja();
+            dibujarTablero();
+            pieza.bajar();
+
+        }
+
+
+        function inicializaTeclado() {
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "w") {
+                    console.log("arriba")
+                    pieza.rotar();
+                }
+                if (e.key === "s") {
+                    console.log("abajo")
+                    pieza.abajo();
+
+                }
+                if (e.key === "a") {
+                    console.log("izquierda")
+                    pieza.izquierda();
+
+                }
+                if (e.key === "d") {
+                    console.log("derecha")
+                    pieza.derecha();
+
+                }
+            })
+        }
+
+
+
+    </script>
+</body>
+
+</html>
